@@ -32,6 +32,11 @@
   background: transparent;
 }
 
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @layer utilities {
   /* Animate text with a shine effect */
   @keyframes text-shine {

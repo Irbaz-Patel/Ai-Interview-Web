@@ -10,10 +10,12 @@ import { API_PATHS } from '../../utils/apiPaths';
 import uploadImage from '../../utils/uploadImage';
 
 const SignUp = ({setCurrentPage}) => {
-  const [profilePic, setProfilePic]=useState(null);
+  // const [profilePic, setProfilePic]=useState(null);
   const [fullName, setFullName]=useState('')
   const [email, setEmail]=useState("")
   const [password, setPassword]=useState("")
+  const [loading, setLoading] = useState(false);
+
 
   const [error, setError]=useState(null)
 
@@ -42,6 +44,7 @@ const SignUp = ({setCurrentPage}) => {
     }
 
     setError("")
+    setLoading(true); 
 
     // SignUp API Call
      try {
@@ -71,7 +74,9 @@ const SignUp = ({setCurrentPage}) => {
       }else{
         setError("Something went wrong. Please try again.")
       }
-    }
+    }  finally {
+    setLoading(false); // <-- End loading
+  }
   };
 
 
@@ -114,9 +119,10 @@ const SignUp = ({setCurrentPage}) => {
 
         {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
 
-        <button className='btn-primary' type='submit'>
-          SIGN UP
-        </button>
+        <button className='btn-primary' type='submit' disabled={loading}>
+  {loading ? "Signing up..." : "SIGN UP"}
+</button>
+
 
         <p className='text-[13px] text-slate-800 mt-3'>
           Already an account?{" "}
