@@ -19,22 +19,37 @@ const Dashboard = () => {
 
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [sessions, setSessions] = useState([]);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   const [openDeleteAlert, setOpenDeleteAlert] = useState({
     open: false,
     data: null,
   });
 
+  // const fetchAllSessions = async () => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) return;
+
+  //   try {
+  //     const response = await axiosInstance.get(API_PATHS.SESSION.GET_ALL);
+  //     setSessions(response.data);
+  //     // console.log(sessions)
+  //   } catch (error) {
+  //     console.error("Error fetching session data:", error);
+  //   }
+  // };
   const fetchAllSessions = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
+      setSessionLoading(true); // start loading
       const response = await axiosInstance.get(API_PATHS.SESSION.GET_ALL);
       setSessions(response.data);
-      // console.log(sessions)
     } catch (error) {
       console.error("Error fetching session data:", error);
+    } finally {
+      setSessionLoading(false); // stop loading
     }
   };
 
@@ -56,21 +71,27 @@ const Dashboard = () => {
   // useEffect(() => {
   //   fetchAllSessions();
   // }, []);
-    useEffect(() => {
+  useEffect(() => {
     if (!loading) {
       fetchAllSessions(); // ✅ safe now
     }
   }, [loading]);
 
-    if (loading) {
-    return <div className="p-10">Loading user...</div>; // ✅ after hooks
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <p className="text-lg font-semibold text-gray-600 animate-pulse">
+          Loading ...
+        </p>
+      </div>
+    ); 
   }
 
   return (
     <DashboardLayout>
       <div className="w-full max-w-7xl mx-auto pt-4 pb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-7 pt-1 pb-6 px-4 md:px-0">
-          {sessions?.map((data, index) => (
+          {/* {sessions?.map((data, index) => (
             <SummaryCard
               key={data?._id}
               colors={CARD_BG[index % CARD_BG.length]}
@@ -87,7 +108,42 @@ const Dashboard = () => {
               onSelect={() => navigate(`/interview-prep/${data?._id}`)}
               onDelete={() => setOpenDeleteAlert({ open: true, data })}
             />
-          ))}
+          ))} */}
+          {sessionLoading ? (
+            <div className="col-span-full text-center py-10">
+              <p className="text-gray-500 animate-pulse">
+                Fetching sessions...
+              </p>
+            </div>
+          ) : sessions?.length === 0 ? (
+            <div className="col-span-full text-center py-10">
+              <h2 className="text-xl font-semibold text-gray-600 mb-2">
+                No sessions found
+              </h2>
+              <p className="text-gray-500">
+                Start by creating a new interview prep session.
+              </p>
+            </div>
+          ) : (
+            sessions.map((data, index) => (
+              <SummaryCard
+                key={data?._id}
+                colors={CARD_BG[index % CARD_BG.length]}
+                role={data?.role || ""}
+                topicsToFocus={data?.topicsToFocus || ""}
+                experience={data?.experience || "-"}
+                questions={data?.questions?.length || "-"}
+                description={data?.description || ""}
+                lastUpdated={
+                  data?.updatedAt
+                    ? moment(data.updatedAt).format("Do MMM YYYY")
+                    : ""
+                }
+                onSelect={() => navigate(`/interview-prep/${data?._id}`)}
+                onDelete={() => setOpenDeleteAlert({ open: true, data })}
+              />
+            ))
+          )}
         </div>
 
         <button
